@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProductType {
+  FINISHED
+  RECIPE
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  password   String
+  role_id    Int
+  role       Role     @relation(fields: [role_id], references: [id])
+  created_at DateTime @default(now())
+  sales      Sale[]
+
+  @@map("users")
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  status   Boolean   @default(true)
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id           Int         @id @default(autoincrement())
+  name         String
+  category_id  Int
+  category     Category    @relation(fields: [category_id], references: [id])
+  product_type ProductType
+  price        Decimal     @db.Decimal(10, 2)
+  quantity     Int         @default(0)
+  image        String?
+  status       Boolean     @default(true)
+  sale_items   SaleItem[]
+
+  @@map("products")
+}
+
+model Sale {
+  id             Int        @id @default(autoincrement())
+  invoice_no     String     @unique
+  cashier_id     Int
+  cashier        User       @relation(fields: [cashier_id], references: [id])
+  subtotal       Decimal    @db.Decimal(10, 2)
+  discount       Decimal    @default(0.00) @db.Decimal(10, 2)
+  total          Decimal    @db.Decimal(10, 2)
+  payment_method String
+  created_at     DateTime   @default(now())
+  items          SaleItem[]
+
+  @@map("sales")
+}
+
+model SaleItem {
+  id         Int     @id @default(autoincrement())
+  sale_id    Int
+  sale       Sale    @relation(fields: [sale_id], references: [id])
+  product_id Int
+  product    Product @relation(fields: [product_id], references: [id])
+  qty        Int
+  price      Decimal @db.Decimal(10, 2)
+  total      Decimal @db.Decimal(10, 2)
+
+  @@map("sale_items")
+}
