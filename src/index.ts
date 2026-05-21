@@ -1,19 +1,21 @@
 import express, { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './config/prisma';
+import apiRoutes from './routes';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const app = express();
-const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// Basic test route
+// Register API routes
+app.use('/api', apiRoutes);
+
+// Health check route
 app.get('/health', async (req: Request, res: Response) => {
   try {
-    // Basic DB check to ensure Prisma is working correctly
     const roleCount = await prisma.role.count();
     res.json({
       status: 'OK',
@@ -39,3 +41,4 @@ app.get('/health', async (req: Request, res: Response) => {
 app.listen(PORT, () => {
   console.log(`🚀 Juice Bar POS Server running on http://localhost:${PORT}`);
 });
+
