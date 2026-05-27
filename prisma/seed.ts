@@ -47,6 +47,82 @@ async function main() {
     role_id: adminUser.role_id,
   });
 
+  // 3. Seed Dummy Categories
+  const categoryJuices = await prisma.category.upsert({
+    where: { name: 'Fresh Juices' },
+    update: {},
+    create: { name: 'Fresh Juices', status: true },
+  });
+
+  const categorySmoothies = await prisma.category.upsert({
+    where: { name: 'Smoothies' },
+    update: {},
+    create: { name: 'Smoothies', status: true },
+  });
+
+  const categoryAddons = await prisma.category.upsert({
+    where: { name: 'Add-ons' },
+    update: {},
+    create: { name: 'Add-ons', status: true },
+  });
+
+  console.log('Dummy categories seeded.');
+
+  // 4. Seed Dummy Products
+  const ensureProduct = async (productData: any) => {
+    const existing = await prisma.product.findFirst({ where: { name: productData.name } });
+    if (!existing) {
+      await prisma.product.create({ data: productData });
+    }
+  };
+
+  await ensureProduct({
+    name: 'Orange Juice',
+    category_id: categoryJuices.id,
+    product_type: 'FINISHED',
+    price: 5.00,
+    quantity: 50,
+    status: true,
+  });
+
+  await ensureProduct({
+    name: 'Green Detox',
+    category_id: categorySmoothies.id,
+    product_type: 'RECIPE',
+    price: 7.50,
+    quantity: 0,
+    status: true,
+  });
+
+  await ensureProduct({
+    name: 'Berry Blast',
+    category_id: categorySmoothies.id,
+    product_type: 'FINISHED',
+    price: 6.50,
+    quantity: 4, // Low stock testing
+    status: true,
+  });
+
+  await ensureProduct({
+    name: 'Extra Ginger Shot',
+    category_id: categoryAddons.id,
+    product_type: 'RECIPE',
+    price: 1.50,
+    quantity: 0,
+    status: true,
+  });
+
+  await ensureProduct({
+    name: 'Spring Water',
+    category_id: categoryAddons.id,
+    product_type: 'FINISHED',
+    price: 2.00,
+    quantity: 100,
+    status: true,
+  });
+
+  console.log('Dummy products seeded successfully.');
+
   console.log('Seeding completed successfully.');
 }
 
