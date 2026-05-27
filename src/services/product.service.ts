@@ -6,6 +6,8 @@ export interface CreateProductInput {
   product_type: 'FINISHED' | 'RECIPE';
   price: number;
   quantity?: number;
+  low_stock_threshold?: number;
+  recipe_description?: string;
   image?: string;
   status?: boolean;
 }
@@ -16,6 +18,8 @@ export interface UpdateProductInput {
   product_type?: 'FINISHED' | 'RECIPE';
   price?: number;
   quantity?: number;
+  low_stock_threshold?: number;
+  recipe_description?: string;
   image?: string;
   status?: boolean;
 }
@@ -56,6 +60,8 @@ export class ProductService {
         product_type: data.product_type,
         price: data.price,
         quantity: data.quantity !== undefined ? data.quantity : 0,
+        low_stock_threshold: data.low_stock_threshold !== undefined ? data.low_stock_threshold : 5,
+        recipe_description: data.recipe_description || null,
         image: data.image || null,
         status: data.status !== undefined ? data.status : true,
       },
@@ -77,6 +83,8 @@ export class ProductService {
         product_type: data.product_type,
         price: data.price,
         quantity: data.quantity,
+        low_stock_threshold: data.low_stock_threshold,
+        recipe_description: data.recipe_description,
         image: data.image,
         status: data.status,
       },

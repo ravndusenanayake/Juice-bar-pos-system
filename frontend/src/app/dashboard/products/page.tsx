@@ -28,6 +28,8 @@ interface Product {
   product_type: 'FINISHED' | 'RECIPE';
   price: string | number;
   quantity: number;
+  low_stock_threshold: number;
+  recipe_description: string | null;
   image: string | null;
   status: boolean;
   category: Category;
@@ -51,6 +53,8 @@ export default function ProductsPage() {
   const [productType, setProductType] = useState<'FINISHED' | 'RECIPE'>('FINISHED');
   const [price, setPrice] = useState('');
   const [quantity, setQuantity] = useState('');
+  const [lowStockThreshold, setLowStockThreshold] = useState('5');
+  const [recipeDescription, setRecipeDescription] = useState('');
   const [status, setStatus] = useState(true);
   
   // Delete Modal States
@@ -107,6 +111,8 @@ export default function ProductsPage() {
     setProductType('FINISHED');
     setPrice('');
     setQuantity('');
+    setLowStockThreshold('5');
+    setRecipeDescription('');
     setStatus(true);
     setSubmitError(null);
     setIsModalOpen(true);
@@ -120,6 +126,8 @@ export default function ProductsPage() {
     setProductType(product.product_type);
     setPrice(product.price.toString());
     setQuantity(product.quantity.toString());
+    setLowStockThreshold(product.low_stock_threshold?.toString() || '5');
+    setRecipeDescription(product.recipe_description || '');
     setStatus(product.status);
     setSubmitError(null);
     setIsModalOpen(true);
@@ -144,6 +152,11 @@ export default function ProductsPage() {
       return setSubmitError('Quantity must be a valid non-negative integer.');
     }
 
+    const parsedThreshold = parseInt(lowStockThreshold, 10);
+    if (productType === 'FINISHED' && (isNaN(parsedThreshold) || parsedThreshold < 0)) {
+      return setSubmitError('Low stock threshold must be a valid non-negative integer.');
+    }
+
     setSubmitting(true);
     setSubmitError(null);
 
@@ -165,6 +178,8 @@ export default function ProductsPage() {
           product_type: productType,
           price: parsedPrice,
           quantity: parsedQty,
+          low_stock_threshold: productType === 'FINISHED' ? parsedThreshold : undefined,
+          recipe_description: productType === 'RECIPE' ? recipeDescription : undefined,
           status,
         }),
       });
@@ -227,8 +242,10 @@ export default function ProductsPage() {
       return <span className="text-xs text-slate-500 font-medium italic">N/A (Recipe)</span>;
     }
     const qty = product.quantity;
-    if (qty === 0) return <Badge className="px-2 py-0.5 bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 text-[10px] font-bold">Out of Stock</Badge>;
-    if (qty <= 5) return <Badge className="px-2 py-0.5 bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-500/20 text-[10px] font-bold">Low Stock ({qty})</Badge>;
+    const threshold = product.low_stock_threshold || 5;
+    
+    if (qty === 0) return <Badge className="px-2 py-0.5 bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/20 text-[10px] font-bold">Out of Stock</Badge>;
+    if (qty <= threshold) return <Badge className="px-2 py-0.5 bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-500/20 text-[10px] font-bold">Low Stock ({qty})</Badge>;
     return <Badge className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 text-[10px] font-bold">Healthy ({qty})</Badge>;
   };
 
@@ -389,30 +406,58 @@ export default function ProductsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Unit Price ($)</Label>
-                  <Input
-                    type="number" step="0.01" min="0"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    disabled={submitting}
-                    className="bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-850 text-slate-900 dark:text-slate-200"
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Unit Price ($)</Label>
+                    <Input
+                      type="number" step="0.01" min="0"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      disabled={submitting}
+                      className="bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-850 text-slate-900 dark:text-slate-200"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Inventory Stock</Label>
+                    <Input
+                      type="number" min="0"
+                      value={productType === 'RECIPE' ? '' : quantity}
+                      onChange={(e) => setQuantity(e.target.value)}
+                      disabled={submitting || productType === 'RECIPE'}
+                      className="bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-850 text-slate-900 dark:text-slate-200 disabled:opacity-40 disabled:bg-slate-100 dark:disabled:bg-slate-900/10"
+                      required={productType === 'FINISHED'}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Inventory Stock</Label>
-                  <Input
-                    type="number" min="0"
-                    value={productType === 'RECIPE' ? '' : quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
-                    disabled={submitting || productType === 'RECIPE'}
-                    className="bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-850 text-slate-900 dark:text-slate-200 disabled:opacity-40 disabled:bg-slate-100 dark:disabled:bg-slate-900/10"
-                    required={productType === 'FINISHED'}
-                  />
-                </div>
-              </div>
+
+                {productType === 'FINISHED' && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Low Stock Alert Threshold</Label>
+                    <Input
+                      type="number" min="0"
+                      value={lowStockThreshold}
+                      onChange={(e) => setLowStockThreshold(e.target.value)}
+                      disabled={submitting}
+                      className="bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-850 text-slate-900 dark:text-slate-200"
+                      required
+                    />
+                    <p className="text-[10px] text-slate-500">You will be alerted when stock falls to this amount or lower.</p>
+                  </div>
+                )}
+
+                {productType === 'RECIPE' && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Recipe Instructions (Optional)</Label>
+                    <textarea
+                      value={recipeDescription}
+                      onChange={(e) => setRecipeDescription(e.target.value)}
+                      disabled={submitting}
+                      className="w-full min-h-[80px] rounded-md bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-850 text-slate-900 dark:text-slate-200 p-2 text-sm focus-visible:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                      placeholder="e.g. 1. Blend 2 avocados. 2. Add 200ml milk..."
+                    />
+                  </div>
+                )}
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Status</Label>

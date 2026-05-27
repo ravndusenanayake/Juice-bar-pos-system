@@ -48,7 +48,7 @@ export class ProductController {
    */
   async createProduct(req: Request, res: Response): Promise<void> {
     try {
-      const { name, category_id, product_type, price, quantity, image, status } = req.body;
+      const { name, category_id, product_type, price, quantity, low_stock_threshold, recipe_description, image, status } = req.body;
 
       // Validate required fields
       if (!name || typeof name !== 'string' || name.trim() === '') {
@@ -76,6 +76,16 @@ export class ProductController {
         return;
       }
 
+      if (low_stock_threshold !== undefined && (typeof low_stock_threshold !== 'number' || low_stock_threshold < 0 || !Number.isInteger(low_stock_threshold))) {
+        res.status(400).json({ error: 'Low stock threshold must be a non-negative integer' });
+        return;
+      }
+
+      if (recipe_description !== undefined && typeof recipe_description !== 'string') {
+        res.status(400).json({ error: 'Recipe description must be a string' });
+        return;
+      }
+
       // Verify category exists
       const category = await categoryService.getCategoryById(category_id);
       if (!category) {
@@ -89,6 +99,8 @@ export class ProductController {
         product_type,
         price,
         quantity,
+        low_stock_threshold,
+        recipe_description,
         image,
         status,
       });
@@ -111,7 +123,7 @@ export class ProductController {
         return;
       }
 
-      const { name, category_id, product_type, price, quantity, image, status } = req.body;
+      const { name, category_id, product_type, price, quantity, low_stock_threshold, recipe_description, image, status } = req.body;
 
       const updatedData: any = {};
 
@@ -159,6 +171,22 @@ export class ProductController {
           return;
         }
         updatedData.quantity = quantity;
+      }
+
+      if (low_stock_threshold !== undefined) {
+        if (typeof low_stock_threshold !== 'number' || low_stock_threshold < 0 || !Number.isInteger(low_stock_threshold)) {
+          res.status(400).json({ error: 'Low stock threshold must be a non-negative integer' });
+          return;
+        }
+        updatedData.low_stock_threshold = low_stock_threshold;
+      }
+
+      if (recipe_description !== undefined) {
+        if (typeof recipe_description !== 'string') {
+          res.status(400).json({ error: 'Recipe description must be a string' });
+          return;
+        }
+        updatedData.recipe_description = recipe_description;
       }
 
       if (image !== undefined) updatedData.image = image;
