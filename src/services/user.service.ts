@@ -1,5 +1,5 @@
 import { prisma } from '../config/prisma';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export class UserService {
   /**
