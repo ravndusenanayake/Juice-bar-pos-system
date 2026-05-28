@@ -50,8 +50,8 @@ export default function SalesHistoryPage() {
       if (!res.ok) throw new Error('Failed to load sales history');
       const data = await res.json();
       setSales(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }

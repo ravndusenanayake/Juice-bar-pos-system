@@ -47,8 +47,8 @@ export default function CashiersPage() {
       if (!res.ok) throw new Error('Failed to load users');
       const data = await res.json();
       setUsers(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
@@ -84,8 +84,8 @@ export default function CashiersPage() {
       setIsModalOpen(false);
       setFormData({ name: '', email: '', password: '' });
       fetchUsers();
-    } catch (err: any) {
-      setFormError(err.message);
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : String(err));
     } finally {
       setSubmitting(false);
     }

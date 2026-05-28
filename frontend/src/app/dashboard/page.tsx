@@ -43,8 +43,8 @@ export default function DashboardIndexPage() {
         
         const data = await res.json();
         setStats(data);
-      } catch (err: any) {
-        setError(err.message || 'An error occurred loading stats');
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'An error occurred loading stats');
       } finally {
         setLoadingStats(false);
       }
@@ -95,7 +95,7 @@ export default function DashboardIndexPage() {
                 <DollarSign className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Today's Revenue</p>
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Today&apos;s Revenue</p>
                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight mt-1">
                   ${stats.todaySales.toFixed(2)}
                 </h3>

@@ -81,7 +81,7 @@ export default function PosPage() {
 
       if (catRes.ok) {
         const catData = await catRes.json();
-        setCategories(catData.filter((c: any) => c.status));
+        setCategories(catData.filter((c: { status: boolean }) => c.status));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error fetching catalog');
@@ -157,8 +157,8 @@ export default function PosPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
+        <div className="flex flex-col xl:flex-row gap-4">
+          <div className="relative w-full xl:w-64 shrink-0">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
             <Input 
               placeholder="Search products..." 
@@ -167,7 +167,7 @@ export default function PosPage() {
               className="pl-9 bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-200 focus-visible:ring-emerald-500"
             />
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
+          <div className="flex gap-2 overflow-x-auto pb-2 xl:pb-0 hide-scrollbar flex-1">
             <Badge 
               onClick={() => setSelectedCategory(null)}
               className={`cursor-pointer px-4 py-2 whitespace-nowrap text-xs transition-colors ${selectedCategory === null ? 'bg-emerald-500 hover:bg-emerald-600 text-white dark:text-slate-950 font-bold' : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'}`}
